@@ -12,7 +12,7 @@ import { Provider } from "../provider/provider"
 import { NamedError } from "@opencode-ai/util/error"
 import { LSP } from "../lsp"
 import { Format } from "../format"
-import { TuiRoutes } from "./routes/tui"
+
 import { Instance } from "../project/instance"
 import { Vcs, VcsService } from "../project/vcs"
 import { runPromiseInstance } from "@/effect/runtime"
@@ -251,7 +251,6 @@ export namespace Server {
       .route("/provider", ProviderRoutes())
       .route("/", FileRoutes())
       .route("/mcp", McpRoutes())
-      .route("/tui", TuiRoutes())
       .post(
         "/instance/dispose",
         describeRoute({
