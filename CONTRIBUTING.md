@@ -76,6 +76,29 @@ Replace `<platform>` with your platform (e.g., `darwin-arm64`, `linux-x64`).
   - `packages/desktop`: The native desktop app, built with Tauri (wraps `packages/app`)
   - `packages/plugin`: Source for `@opencode-ai/plugin`
 
+### Web-only usage and trimming TUI code
+
+If you only need the web client, the UI in `packages/app` is already separated from the terminal renderer in
+`packages/opencode/src/cli/cmd/tui/`.
+
+- `packages/app` depends on `@opencode-ai/sdk`, `@opencode-ai/ui`, and `@opencode-ai/util`; it does not import the TUI.
+- `opencode serve` and `opencode web` run the headless server and web interface without launching the TUI.
+- The remaining TUI coupling lives in the CLI entrypoint and the server-side event bridge used by terminal sessions:
+  - `packages/opencode/src/index.ts`
+  - `packages/opencode/src/server/routes/tui.ts`
+  - `packages/opencode/src/mcp/index.ts`
+
+In other words, a web-only distribution is feasible, but trimming all terminal UI code is not only deleting
+`src/cli/cmd/tui/**`. You also need to remove or replace the matching TUI command registration and event bridge while
+keeping the headless server routes used by the web app.
+
+For a minimal web-only binary, disable TUI command loading at runtime with `OPENCODE_DISABLE_TUI=1`, or build a binary
+without bundling TUI worker assets:
+
+```bash
+OPENCODE_DISABLE_TUI=1 ./packages/opencode/script/build.ts --single --no-tui
+```
+
 ### Understanding bun dev vs opencode
 
 During development, `bun dev` is the local equivalent of the built `opencode` command. Both run the same CLI interface:
