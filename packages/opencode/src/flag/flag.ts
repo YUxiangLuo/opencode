@@ -23,6 +23,7 @@ export namespace Flag {
   export const OPENCODE_PERMISSION = process.env["OPENCODE_PERMISSION"]
   export const OPENCODE_DISABLE_DEFAULT_PLUGINS = truthy("OPENCODE_DISABLE_DEFAULT_PLUGINS")
   export const OPENCODE_DISABLE_LSP_DOWNLOAD = truthy("OPENCODE_DISABLE_LSP_DOWNLOAD")
+  export declare const OPENCODE_DISABLE_TUI: boolean
   export const OPENCODE_ENABLE_EXPERIMENTAL_MODELS = truthy("OPENCODE_ENABLE_EXPERIMENTAL_MODELS")
   export const OPENCODE_DISABLE_AUTOCOMPACT = truthy("OPENCODE_DISABLE_AUTOCOMPACT")
   export const OPENCODE_DISABLE_MODELS_FETCH = truthy("OPENCODE_DISABLE_MODELS_FETCH")
@@ -120,6 +121,16 @@ Object.defineProperty(Flag, "OPENCODE_CONFIG_DIR", {
 Object.defineProperty(Flag, "OPENCODE_CLIENT", {
   get() {
     return process.env["OPENCODE_CLIENT"] ?? "cli"
+  },
+  enumerable: true,
+  configurable: false,
+})
+
+declare const OPENCODE_TUI_DISABLED: boolean | undefined
+Object.defineProperty(Flag, "OPENCODE_DISABLE_TUI", {
+  get() {
+    if (typeof OPENCODE_TUI_DISABLED !== "undefined") return OPENCODE_TUI_DISABLED
+    return truthy("OPENCODE_DISABLE_TUI")
   },
   enumerable: true,
   configurable: false,

@@ -1,7 +1,14 @@
 import { isDeepEqual } from "remeda"
-import type { ParsedKey } from "@opentui/core"
 
 export namespace Keybind {
+  type ParsedKey = {
+    name: string
+    ctrl?: boolean
+    meta?: boolean
+    shift?: boolean
+    super?: boolean
+  }
+
   /**
    * Keybind info derived from OpenTUI's ParsedKey with our custom `leader` field.
    * This ensures type compatibility and catches missing fields at compile time.

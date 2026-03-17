@@ -92,6 +92,13 @@ In other words, a web-only distribution is feasible, but trimming all terminal U
 `src/cli/cmd/tui/**`. You also need to remove or replace the matching TUI command registration and event bridge while
 keeping the headless server routes used by the web app.
 
+For a minimal web-only binary, disable TUI command loading at runtime with `OPENCODE_DISABLE_TUI=1`, or build a binary
+without bundling TUI worker assets:
+
+```bash
+OPENCODE_DISABLE_TUI=1 ./packages/opencode/script/build.ts --single --no-tui
+```
+
 ### Understanding bun dev vs opencode
 
 During development, `bun dev` is the local equivalent of the built `opencode` command. Both run the same CLI interface:

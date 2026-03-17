@@ -21,7 +21,7 @@ import { McpOAuthCallback } from "./oauth-callback"
 import { McpAuth } from "./auth"
 import { BusEvent } from "../bus/bus-event"
 import { Bus } from "@/bus"
-import { TuiEvent } from "@/cli/cmd/tui/event"
+import { TuiEvent } from "@/bus/events/tui"
 import open from "open"
 
 export namespace MCP {

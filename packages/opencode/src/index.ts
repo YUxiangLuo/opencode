@@ -22,8 +22,6 @@ import { McpCommand } from "./cli/cmd/mcp"
 import { GithubCommand } from "./cli/cmd/github"
 import { ExportCommand } from "./cli/cmd/export"
 import { ImportCommand } from "./cli/cmd/import"
-import { AttachCommand } from "./cli/cmd/tui/attach"
-import { TuiThreadCommand } from "./cli/cmd/tui/thread"
 import { AcpCommand } from "./cli/cmd/acp"
 import { EOL } from "os"
 import { WebCommand } from "./cli/cmd/web"
@@ -34,6 +32,13 @@ import path from "path"
 import { Global } from "./global"
 import { JsonMigration } from "./storage/json-migration"
 import { Database } from "./storage/db"
+import { Flag } from "./flag/flag"
+
+declare const OPENCODE_TUI_DISABLED: boolean | undefined
+const tui = typeof OPENCODE_TUI_DISABLED !== "undefined" ? !OPENCODE_TUI_DISABLED : !Flag.OPENCODE_DISABLE_TUI
+const tuiCmd = tui
+  ? await Promise.all([import("./cli/cmd/tui/attach"), import("./cli/cmd/tui/thread")])
+  : undefined
 
 process.on("unhandledRejection", (e) => {
   Log.Default.error("rejection", {
@@ -125,8 +130,6 @@ let cli = yargs(hideBin(process.argv))
   .completion("completion", "generate shell completion script")
   .command(AcpCommand)
   .command(McpCommand)
-  .command(TuiThreadCommand)
-  .command(AttachCommand)
   .command(RunCommand)
   .command(GenerateCommand)
   .command(DebugCommand)
@@ -145,6 +148,10 @@ let cli = yargs(hideBin(process.argv))
   .command(PrCommand)
   .command(SessionCommand)
   .command(DbCommand)
+
+if (tuiCmd) {
+  cli = cli.command(tuiCmd[1].TuiThreadCommand).command(tuiCmd[0].AttachCommand)
+}
 
 if (Installation.isLocal()) {
   cli = cli.command(WorkspaceServeCommand)
