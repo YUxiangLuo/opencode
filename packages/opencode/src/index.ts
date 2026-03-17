@@ -35,10 +35,10 @@ import { Database } from "./storage/db"
 import { Flag } from "./flag/flag"
 
 declare const OPENCODE_TUI_DISABLED: boolean | undefined
-const tui = typeof OPENCODE_TUI_DISABLED !== "undefined" ? !OPENCODE_TUI_DISABLED : !Flag.OPENCODE_DISABLE_TUI
-const tuiCmd = tui
+const tuiEnabled = typeof OPENCODE_TUI_DISABLED !== "undefined" ? !OPENCODE_TUI_DISABLED : !Flag.OPENCODE_DISABLE_TUI
+const [attach, thread] = tuiEnabled
   ? await Promise.all([import("./cli/cmd/tui/attach"), import("./cli/cmd/tui/thread")])
-  : undefined
+  : [undefined, undefined]
 
 process.on("unhandledRejection", (e) => {
   Log.Default.error("rejection", {
@@ -149,8 +149,8 @@ let cli = yargs(hideBin(process.argv))
   .command(SessionCommand)
   .command(DbCommand)
 
-if (tuiCmd) {
-  cli = cli.command(tuiCmd[1].TuiThreadCommand).command(tuiCmd[0].AttachCommand)
+if (attach && thread) {
+  cli = cli.command(thread.TuiThreadCommand).command(attach.AttachCommand)
 }
 
 if (Installation.isLocal()) {

@@ -58,7 +58,7 @@ console.log(`Loaded ${migrations.length} migrations`)
 const singleFlag = process.argv.includes("--single")
 const baselineFlag = process.argv.includes("--baseline")
 const skipInstall = process.argv.includes("--skip-install")
-const tui =
+const tuiEnabled =
   !process.argv.includes("--no-tui") && !["1", "true"].includes((process.env.OPENCODE_DISABLE_TUI ?? "").toLowerCase())
 
 const allTargets: {
@@ -149,12 +149,12 @@ await $`rm -rf dist`
 
 const binaries: Record<string, string> = {}
 if (!skipInstall) {
-  if (tui) {
+  if (tuiEnabled) {
     await $`bun install --os="*" --cpu="*" @opentui/core@${pkg.dependencies["@opentui/core"]}`
   }
   await $`bun install --os="*" --cpu="*" @parcel/watcher@${pkg.dependencies["@parcel/watcher"]}`
 }
-const plugin = tui ? [(await import("@opentui/solid/bun-plugin")).default] : []
+const plugins = tuiEnabled ? [(await import("@opentui/solid/bun-plugin")).default] : []
 for (const item of targets) {
   const name = [
     pkg.name,
@@ -171,18 +171,18 @@ for (const item of targets) {
 
   const localPath = path.resolve(dir, "node_modules/@opentui/core/parser.worker.js")
   const rootPath = path.resolve(dir, "../../node_modules/@opentui/core/parser.worker.js")
-  const parserWorker = tui ? fs.realpathSync(fs.existsSync(localPath) ? localPath : rootPath) : undefined
-  const workerPath = tui ? "./src/cli/cmd/tui/worker.ts" : undefined
+  const parserWorker = tuiEnabled ? fs.realpathSync(fs.existsSync(localPath) ? localPath : rootPath) : undefined
+  const workerPath = tuiEnabled ? "./src/cli/cmd/tui/worker.ts" : undefined
 
   // Use platform-specific bunfs root path based on target OS
   const bunfsRoot = item.os === "win32" ? "B:/~BUN/root/" : "/$bunfs/root/"
   const workerRelativePath = parserWorker ? path.relative(dir, parserWorker).replaceAll("\\", "/") : undefined
-  const entrypoints = ["./src/index.ts", parserWorker, workerPath].filter((item): item is string => !!item)
+  const entrypoints = ["./src/index.ts", parserWorker, workerPath].filter((entry): entry is string => entry !== undefined)
 
   await Bun.build({
     conditions: ["browser"],
     tsconfig: "./tsconfig.json",
-    plugins: plugin,
+    plugins,
     compile: {
       autoloadBunfig: false,
       autoloadDotenv: false,
@@ -201,11 +201,11 @@ for (const item of targets) {
       OPENCODE_LIBC: item.os === "linux" ? `'${item.abi ?? "glibc"}'` : "",
       ...(workerRelativePath ? { OTUI_TREE_SITTER_WORKER_PATH: bunfsRoot + workerRelativePath } : {}),
       ...(workerPath ? { OPENCODE_WORKER_PATH: workerPath } : {}),
-      ...(!tui ? { OPENCODE_TUI_DISABLED: "true" } : {}),
+      ...(!tuiEnabled ? { OPENCODE_TUI_DISABLED: "true" } : {}),
     },
   })
 
-  if (tui) {
+  if (tuiEnabled) {
     await $`rm -rf ./dist/${name}/bin/tui`
   }
   await Bun.file(`dist/${name}/package.json`).write(
